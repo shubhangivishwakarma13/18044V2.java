@@ -1,289 +1,221 @@
-import java.util.Scanner;
-import java.util.Vector;
+import java.util.*;
 
-class ProductService 
-{
-    private static Product[] products = 
-    {
-        new Product("Pen", 10),
-        new Product("Notebook", 50),
-        new Product("Eraser", 5),
-        new Product("Marker", 15),
-        new Product("Folder", 20),
-        new Product("Pencil", 5),
-        new Product("Highlighter", 20),
-        new Product("Stapler", 55),
-        new Product("Glue", 25),
-        new Product("Scissors", 60)
-    };
-
-    public static Product[] getProducts() 
-    {
-        return products;
-    }
-
-    public static Product getProduct(int index) 
-    {
-        if (index >= 0 && index < products.length) 
-        {
-            return products[index];
-        }
-        return null;
-    }
-
-    public static void displayProducts() 
-    {
-        System.out.println("Available products:");
-        for (int i = 0; i < products.length; i++) 
-        {
-            System.out.println((i + 1) + ". " + products[i]);
-        }
-    }
-}
-
-class Product 
-{
+class Product {
+    private int id;
     private String name;
     private int price;
 
-    public Product(String name, int price) 
-    {
+
+    public Product(int id, String name, int price) {
+        this.id = id;
         this.name = name;
         this.price = price;
     }
 
-    public String getName() 
-    {
+    public int getId() {
+        return id;
+    }
+
+    public String getName() {
         return name;
     }
 
-    public int getPriceInINR() 
-    {
+    public int getPrice() {
         return price;
     }
 
-    public String toString() 
-    {
-        return name + ": " + formatCurrency(getPriceInINR());
-    }
-
-    private String formatCurrency(int amount) 
-    {
-        return "Rupees " + String.format("%,d", amount);
+    @Override
+    public String toString() {
+        return id + ". " + name + " (Rupees " + price + ")";
     }
 }
 
-class Customer 
-{
-    private String name;
-
-    public Customer(String name) 
-    {
-        this.name = name;
-    }
-
-    public String getName() 
-    {
-        return name;
-    }
-}
-
-class OrderItem 
-{
+class OrderItem {
     private Product product;
     private int quantity;
 
-    public OrderItem(Product product, int quantity) 
-    {
+    public OrderItem(Product product, int quantity) {
         this.product = product;
         this.quantity = quantity;
     }
 
-    public Product getProduct() 
-    {
+    public Product getProduct() {
         return product;
     }
 
-    public int getQuantity() 
-    {
+    public int getQuantity() {
         return quantity;
     }
 
-    public void updateQuantity(int delta) 
-    {
-        this.quantity += delta;
+    public void reduceQuantity(int amount) {
+        this.quantity -= amount;
     }
 
-    public int getTotalPriceInINR() 
-    {
-        return product.getPriceInINR() * quantity;
+    public int getTotalPriceInINR() {
+        return product.getPrice() * quantity;
     }
 
-    public String toString() 
-    {
-        return product.getName() + " (x" + quantity + "): " + formatCurrency(getTotalPriceInINR());
-    }
-
-    private String formatCurrency(int amount) 
-    {
-        return "Rupees " + String.format("%,d", amount);
+    public String toString() {
+        return product.getName() + " (x" + quantity + "): Rupees " + getTotalPriceInINR();
     }
 }
 
-class Order 
-{
-    private Customer customer;
-    private Vector<OrderItem> orderItems;
-    private int totalAmount = 0;
+class StationeryShopB {
+    private static Vector<Product> products = new Vector<>();
+    private static Vector<OrderItem> orderItems = new Vector<>();
 
-    public Order(Customer customer) 
-    {
-        this.customer = customer;
-        this.orderItems = new Vector<>();
-    }
-
-    public void addProduct(Product product, int quantity) 
-    {
-        boolean found = false;
-        for (OrderItem item : orderItems) 
-        {
-            if (item.getProduct().equals(product)) 
-            {
-                item.updateQuantity(quantity);
-                totalAmount += product.getPriceInINR() * quantity;
-
-                if (item.getQuantity() <= 0) 
-                {
-                    orderItems.remove(item);
-                    System.out.println("Removed " + product.getName() + " from the order.");
-                }
-                found = true;
-                break;
-            }
-        }
-
-        if (!found && quantity > 0) 
-        {
-            orderItems.add(new OrderItem(product, quantity));
-            totalAmount += product.getPriceInINR() * quantity;
-        }
-    }
-
-    public void printOrder() 
-    {
-        System.out.println("Order for " + customer.getName() + ":");
-        for (OrderItem item : orderItems) 
-        {
-            System.out.println(item);
-        }
-        System.out.println("Total Amount: " + formatCurrency(totalAmount));
-    }
-
-    private String formatCurrency(int amount) 
-    {
-        return "Rupees " + String.format("%,d", amount);
-    }
-}
-
-public class StationeryShopB 
-{
-    public static void main(String[] args) 
-    {
+    public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.print("Enter customer name: ");
-        String customerName = scanner.nextLine();
-        Customer customer = new Customer(customerName);
-        Order order = new Order(customer);
+        // Add some products to the list
+        addProducts();
 
-        ProductService.displayProducts();
-        int productLimit = 50;
-        int selectedProducts = 0;
-        boolean finished = false;
+        // Display available products
+        displayProducts();
 
-        while (!finished && selectedProducts < productLimit) 
-        {
-            System.out.println("\nOptions:");
-            System.out.println("1. Add a product");
-            System.out.println("2. Remove a product");
-            System.out.println("0. Finish order");
-            System.out.print("Enter your choice: ");
-            int option = scanner.nextInt();
-
-            switch (option) 
-            {
-                case 1: 
-                    ProductService.displayProducts();
-                    System.out.print("Select a product by number: ");
-                    int addChoice = scanner.nextInt();
-
-                    if (addChoice > 0 && addChoice <= ProductService.getProducts().length) 
-                    {
-                        Product selectedProduct = ProductService.getProduct(addChoice - 1);
-                        System.out.print("Enter quantity for " + selectedProduct.getName() + ": ");
-                        int addQuantity = scanner.nextInt();
-
-                        if (addQuantity > 0) 
-                        {
-                            order.addProduct(selectedProduct, addQuantity);
-                            System.out.println("Added " + addQuantity + " x " + selectedProduct.getName() + " to your order.");
-                            selectedProducts++;
-                        } 
-                        else 
-                        {
-                            System.out.println("Quantity must be greater than 0.");
-                        }
-                    } 
-                    else 
-                    {
-                        System.out.println("Invalid product selection.");
-                    }
-                    break;
-
-                case 2: 
-                    System.out.println("\nYour current order:");
-                    order.printOrder();
-                    System.out.print("Select a product by number to remove: ");
-                    int removeChoice = scanner.nextInt();
-
-                    if (removeChoice > 0 && removeChoice <= ProductService.getProducts().length) 
-                    {
-                        Product selectedProduct = ProductService.getProduct(removeChoice - 1);
-                        System.out.print("Enter quantity to remove for " + selectedProduct.getName() + ": ");
-                        int removeQuantity = scanner.nextInt();
-
-                        if (removeQuantity > 0) 
-                        {
-                            order.addProduct(selectedProduct, -removeQuantity);
-                            System.out.println("Removed " + removeQuantity + " x " + selectedProduct.getName() + " from your order.");
-                        } 
-                        else 
-                        {
-                            System.out.println("Quantity must be greater than 0.");
-                        }
-                    } 
-                    else 
-                    {
-                        System.out.println("Invalid product selection.");
-                    }
-                    break;
-
-                case 0: 
-                    finished = true;
-                    break;
-
-                default:
-                    System.out.println("Invalid option. Please choose again.");
-            }
-
-            if (selectedProducts == productLimit) 
-            {
-                System.out.println("Product limit reached. You can select up to " + productLimit + " products.");
-                finished = true;
+        // Prompt and validate customer name
+        String customerName = "";
+        while (true) {
+            System.out.print("Enter customer name: ");
+            customerName = scanner.nextLine();
+            if (isValidCustomerName(customerName)) {
+                break;
+            } else {
+                System.out.println("Invalid name! Please enter a name using only alphabets and spaces.");
             }
         }
 
-        order.printOrder();
+        boolean finished = false;
+        while (!finished) {
+            System.out.print("Select a product by ID (0 to finish, -1 to remove an item, -2 to reduce quantity): ");
+            int productId = scanner.nextInt();
+
+            if (productId == 0) {
+                finished = true;
+            } else if (productId == -1) {
+                removeItem(scanner);
+            } else if (productId == -2) {
+                reduceQuantity(scanner);
+            } else {
+                Product product = getProductById(productId);
+                if (product != null) {
+                    System.out.print("Enter quantity (must be greater than zero): ");
+                    int quantity = scanner.nextInt();
+                    if (quantity <= 0) {
+                        System.out.println("Invalid quantity. Quantity must be greater than zero.");
+                    } else {
+                        orderItems.add(new OrderItem(product, quantity));
+                        System.out.println("Added " + quantity + " x " + product.getName() + " to your order.");
+                    }
+                } else {
+                    System.out.println("Invalid product ID. Please try again.");
+                }
+            }
+        }
+
+        printOrderSummary();
         scanner.close();
+    }
+
+    private static void addProducts() {
+        // Adding products with correct constructor parameters
+        products.add(new Product(1, "Pen", 10));
+        products.add(new Product(2, "Notebook", 50));
+        products.add(new Product(3, "Eraser", 5));
+        products.add(new Product(4, "Marker", 15));
+        products.add(new Product(5, "Folder", 20));
+        products.add(new Product(6, "Pencil", 5));
+        products.add(new Product(7, "Highlighter", 20));
+        products.add(new Product(8, "Stapler", 55));
+        products.add(new Product(9, "Glue", 25));
+        products.add(new Product(10, "Scissors", 60));
+    }
+
+    private static void displayProducts() {
+        System.out.println("Available products:");
+        for (Product product : products) {
+            System.out.println(product);
+        }
+    }
+
+    private static boolean isValidCustomerName(String name) {
+        return name.matches("^[a-zA-Z\\s]+$"); // Allows alphabets and spaces only
+    }
+
+    private static Product getProductById(int id) {
+        for (Product product : products) {
+            if (product.getId() == id) {
+                return product;
+            }
+        }
+        return null; // Return null if no product is found with the given ID
+    }
+
+    private static void printOrderSummary() {
+        System.out.println("Order Summary:");
+        int totalAmount = 0;
+
+        for (OrderItem item : orderItems) {
+            String productName = item.getProduct().getName();
+            int quantity = item.getQuantity();
+            int totalPrice = item.getTotalPriceInINR();
+            totalAmount += totalPrice;
+
+            System.out.println(productName + " (x" + quantity + "): Rupees " + totalPrice);
+        }
+
+        System.out.println("Total Amount: Rupees " + totalAmount);
+    }
+
+    private static void removeItem(Scanner scanner) {
+        if (orderItems.isEmpty()) {
+            System.out.println("No items in the order to remove.");
+            return;
+        }
+
+        System.out.println("Current items in your order:");
+        for (int i = 0; i < orderItems.size(); i++) {
+            System.out.println((i + 1) + ". " + orderItems.get(i));
+        }
+
+        System.out.print("Select the item number to remove: ");
+        int itemNumber = scanner.nextInt();
+        if (itemNumber > 0 && itemNumber <= orderItems.size()) {
+            orderItems.remove(itemNumber - 1);
+            System.out.println("Item removed from the order.");
+        } else {
+            System.out.println("Invalid item number.");
+        }
+    }
+
+    private static void reduceQuantity(Scanner scanner) {
+        if (orderItems.isEmpty()) {
+            System.out.println("No items in the order to reduce quantity.");
+            return;
+        }
+
+        System.out.println("Current items in your order:");
+        for (int i = 0; i < orderItems.size(); i++) {
+            System.out.println((i + 1) + ". " + orderItems.get(i));
+        }
+
+        System.out.print("Select the item number to reduce quantity: ");
+        int itemNumber = scanner.nextInt();
+        if (itemNumber > 0 && itemNumber <= orderItems.size()) {
+            OrderItem item = orderItems.get(itemNumber - 1);
+            System.out.print("Enter quantity to reduce: ");
+            int reduceQuantity = scanner.nextInt();
+            if (reduceQuantity > 0 && reduceQuantity <= item.getQuantity()) {
+                item.reduceQuantity(reduceQuantity);
+                if (item.getQuantity() == 0) {
+                    orderItems.remove(itemNumber - 1);
+                }
+                System.out.println("Reduced quantity successfully.");
+            } else {
+                System.out.println("Invalid quantity to reduce.");
+            }
+        } else {
+            System.out.println("Invalid item number.");
+        }
     }
 }
